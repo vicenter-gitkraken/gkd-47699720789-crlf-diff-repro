@@ -13,6 +13,12 @@ rewritten to LF while the index side stays CRLF, so **every line differs**.
 
 `lf-blob.atm` is the control: identical content, LF blob. It should always diff correctly.
 
+After cloning on Windows (`core.autocrlf=true`) expect `git ls-files --eol` to read
+`i/crlf w/crlf` for `crlf-blob.atm` and `i/lf w/crlf` for `lf-blob.atm`. Both are internally
+consistent and real `git diff` is correct for both — only the `i/crlf` one trips GKD, because
+that is the case where `hash-object` should have suppressed the conversion and doesn't. Verified
+on git 2.54.0, the version GKD 12.4.0 bundles.
+
 **Do not add a `.gitattributes`** to this repo — it would set `text`/`eol` attributes and mask the bug.
 
 ## Steps (Windows, GKD 12.4.0)
