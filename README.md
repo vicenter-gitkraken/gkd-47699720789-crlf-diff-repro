@@ -23,7 +23,13 @@ on git 2.54.0, the version GKD 12.4.0 bundles.
 
 ## Steps (Windows, GKD 12.4.0)
 
-1. Clone this repo. Do **not** set `core.autocrlf` yourself; leave whatever you have.
+1. Clone this repo, then force the required condition:
+   ```
+   powershell -ExecutionPolicy Bypass -File .\setup.ps1
+   ```
+   This sets `core.autocrlf=true` at **repo-local** scope. Do not skip it: the bug needs autocrlf
+   active, and if your global gitconfig sets `false` or `input` it overrides the bundled git's
+   system-scope `true` and nothing will reproduce.
 2. GitKraken Desktop -> Preferences -> Experimental -> **Git Executable ON**. This is required —
    the bug lives in the git-binary branch. Restart GKD.
 3. Make the one-line change:
@@ -55,6 +61,19 @@ powershell -ExecutionPolicy Bypass -File .\verify.ps1 -Git "$env:LOCALAPPDATA\gi
 
 Expected output: `real git diff` reports `1 1` for both files, while the simulated GKD path reports
 all lines differing for `crlf-blob.atm` and only the genuine change for `lf-blob.atm`.
+
+## If it does not reproduce
+
+`verify.ps1` splits the two possible causes cleanly:
+
+- **`verify.ps1` says `ok` for `crlf-blob.atm`** -> the *conditions* are not set. Either
+  `core.autocrlf` is not `true` in effect (run `setup.ps1`), or the worktree file lost its CRLFs
+  (`ls-files --eol` must read `i/crlf w/crlf`), or you edited it with something that rewrote the
+  EOLs. Nothing about GKD is being tested yet.
+- **`verify.ps1` says `BUG` but GKD still shows only the one changed line** -> the conditions are
+  right and the simulated code path fails, so the difference is GKD itself: check Git Executable is
+  really ON (and GKD restarted), and check the version is **12.4.0** — Help -> About, or the status
+  bar. On 12.3.1 and earlier the buggy branch does not exist.
 
 `verify.ps1` also prints the loose-object count before/after. The `-w` in `hash-object -w` is
 unnecessary to compute a hash and writes an object into `.git` on every WIP diff render — a second,
