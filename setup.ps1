@@ -10,6 +10,18 @@
 param([string]$Git = "git")
 function G { & $Git @args }
 
+# Guard: if two commands get pasted on one line, "powershell" binds to -Git and every
+# call below fails with a confusing "term not recognized". Fail loudly instead.
+$probe = (& $Git --version 2>&1 | Out-String).Trim()
+if ($probe -notmatch 'git version') {
+    Write-Host "ERROR: -Git is not a git executable." -ForegroundColor Red
+    Write-Host "  -Git = '$Git'"
+    Write-Host "  got  : $probe"
+    Write-Host ""
+    Write-Host "Run each command on its OWN line - do not paste setup.ps1 and make-change.ps1 together."
+    exit 1
+}
+
 G config core.autocrlf true
 G checkout -- crlf-blob.atm lf-blob.atm     # back to baseline, discards any earlier edit
 

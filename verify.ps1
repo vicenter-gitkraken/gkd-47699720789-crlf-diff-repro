@@ -10,6 +10,16 @@ param([string]$Git = "git")
 
 function G { & $Git @args }
 
+$probe = (& $Git --version 2>&1 | Out-String).Trim()
+if ($probe -notmatch 'git version') {
+    Write-Host "ERROR: -Git is not a git executable." -ForegroundColor Red
+    Write-Host "  -Git = '$Git'"
+    Write-Host "  got  : $probe"
+    Write-Host ""
+    Write-Host "Run each command on its OWN line."
+    exit 1
+}
+
 Write-Host "git          : $((G --version) -join ' ')"
 Write-Host "autocrlf     : $((G config --show-origin core.autocrlf) -join ' ')"
 Write-Host ""

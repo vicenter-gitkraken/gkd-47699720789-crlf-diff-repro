@@ -23,6 +23,9 @@ on git 2.54.0, the version GKD 12.4.0 bundles.
 
 ## Steps (Windows, GKD 12.4.0)
 
+Run each `powershell` command below on its **own line**. Pasting two together binds the second
+`powershell` to the script's `-Git` parameter and everything fails with "term not recognized".
+
 1. Clone this repo, then force the required condition:
    ```
    powershell -ExecutionPolicy Bypass -File .\setup.ps1
